@@ -3,18 +3,17 @@ package teamCode.commands;
 import com.arcrobotics.ftclib.command.CommandBase;
 
 import teamCode.subsystems.AscentArmSubsystem;
-import teamCode.subsystems.IntakePivotSubsystem;
 
-public class AscentArmCommand extends CommandBase
+public class StingrayArmCommand extends CommandBase
 {
     private static final double m_homePos = 0.0;
-    private static final double m_scorePos = 0.78;
+    private static final double m_scorePos = 0.6;
     private final AscentArmSubsystem m_ascentArmSubsystem;
     private int m_position;
     private static final int  m_home = 1;
     private static final int  m_score = 0;
 
-    public AscentArmCommand(AscentArmSubsystem ascentSubsystem)
+    public StingrayArmCommand(AscentArmSubsystem ascentSubsystem)
     {
         this.m_ascentArmSubsystem = ascentSubsystem;
         m_position = m_score;

@@ -16,7 +16,9 @@ import com.qualcomm.robotcore.hardware.IMU;
 
 import teamCode.commands.ArmFudgeFactorDownCommand;
 import teamCode.commands.ArmFudgeFactorUpCommand;
-import teamCode.commands.AscentArmCommand;
+import teamCode.commands.ClimbArmDownCommand;
+import teamCode.commands.ClimbArmUpCommand;
+import teamCode.commands.StingrayArmCommand;
 import teamCode.commands.DriveFieldOrientedCommand;
 import teamCode.commands.ArmPositionHomeCommand;
 import teamCode.commands.ArmPositionCloseSampleCommand;
@@ -28,15 +30,16 @@ import teamCode.commands.ArmPositionLowChamberCommand;
 import teamCode.commands.IntakePivotCommand;
 import teamCode.commands.IntakeWheelCommand;
 //import teamCode.commands.PinPointOdometryCommand;
-import teamCode.commands.PinPointOdometryCommand;
+//import teamCode.commands.PinPointOdometryCommand;
 import teamCode.commands.ResetGyroCommand;
 import teamCode.commands.ResetHomeCommand;
 
 import teamCode.commands.SlideFudgeInCommand;
 import teamCode.commands.SlideFudgeOutCommand;
+import teamCode.subsystems.ClimbArmSubsystem;
 import teamCode.subsystems.DriveSubsystem;
 //import teamCode.subsystems.PinPointOdometrySubsystem;
-import teamCode.subsystems.PinPointOdometrySubsystem;
+//import teamCode.subsystems.PinPointOdometrySubsystem;
 import teamCode.subsystems.SlideArmSubsystem;
 import teamCode.subsystems.LiftArmSubsystem;
 import teamCode.subsystems.IntakePivotSubsystem;
@@ -76,11 +79,15 @@ public class RobotContainer extends CommandOpMode
     private Button m_slideFudgeInButton;
     private Button m_slideFudgeOutButton;
     private Button m_odoResetButton;
+    private Button m_climbUpButton;
+    private Button m_climbDownButton;
 
     /* Motors */
     private DcMotor m_slideArmMotor;
     private DcMotor m_liftArmMotor;
+    private DcMotor m_climbArmMotor;
     private CRServo m_intakeWheelServo;
+
 
 
     /* Subsystems */
@@ -91,7 +98,8 @@ public class RobotContainer extends CommandOpMode
     private IntakeWheelSubsystem m_intakeWheelSubsystem;
     private AscentArmSubsystem m_ascentArmSubsystem;
     private GyroSubsystem m_gyroSubsystem;
-    private PinPointOdometrySubsystem m_pinPointOdometrySubsystem;
+    private ClimbArmSubsystem m_climbArmSubsystem;
+//    private PinPointOdometrySubsystem m_pinPointOdometrySubsystem;
 
 
     /* Commands */
@@ -107,13 +115,15 @@ public class RobotContainer extends CommandOpMode
     private ArmPositionHomeCommand m_armPositionHomeCommand;
     private IntakePivotCommand m_intakePivotCommand;
     private IntakeWheelCommand m_intakeWheelCommand;
-    private AscentArmCommand m_ascentArmCommand;
+    private StingrayArmCommand m_ascentArmCommand;
     private ResetGyroCommand m_resetGyroCommand;
     private ResetHomeCommand m_resetHomeCommand;
     private SlideFudgeInCommand m_slideFudgeInCommand;
     private SlideFudgeOutCommand m_slideFudgeOutCommand;
-    private GoBildaPinpointDriver m_goBilda;
-    private PinPointOdometryCommand m_pinPointOdometryCommand;
+    private ClimbArmUpCommand m_climbArmUpCommand;
+    private ClimbArmDownCommand m_climbArmDownCommand;
+//    private GoBildaPinpointDriver m_goBilda;
+//    private PinPointOdometryCommand m_pinPointOdometryCommand;
 
 
 
@@ -157,6 +167,7 @@ public class RobotContainer extends CommandOpMode
 
         this.m_slideArmMotor = hardwareMap.get(DcMotor.class, "slideArmMotor");
         this.m_liftArmMotor = hardwareMap.get(DcMotor.class, "liftArmMotor");
+        this.m_climbArmMotor = hardwareMap.get(DcMotor.class, "climbArmMotor");
         this.m_intakeWheelServo = new CRServo(hardwareMap, "intakeWheelServo");
 
         /* PID */
@@ -170,11 +181,12 @@ public class RobotContainer extends CommandOpMode
         this.m_driveSubsystem = new DriveSubsystem(this.m_drive, this.m_imu);
         this.m_slideArmSubsystem = new SlideArmSubsystem(this.m_slideArmMotor);
         this.m_liftArmSubsystem = new LiftArmSubsystem(this.m_liftArmMotor)/*() -> this.m_pIDController.calculate(this.m_liftArmMotor.getCurrentPosition()))*/;
+        this.m_climbArmSubsystem = new ClimbArmSubsystem(this.m_climbArmMotor);
         this.m_intakePivotSubsystem = new IntakePivotSubsystem(hardwareMap, "intakePivotServo");
         this.m_intakeWheelSubsystem = new IntakeWheelSubsystem(this.m_intakeWheelServo);
         this.m_ascentArmSubsystem = new AscentArmSubsystem(hardwareMap, "ascentArmServo");
         this.m_gyroSubsystem = new GyroSubsystem(this.m_imu);
-        this.m_pinPointOdometrySubsystem = new PinPointOdometrySubsystem(m_goBilda);
+//        this.m_pinPointOdometrySubsystem = new PinPointOdometrySubsystem(m_goBilda);
 
         register(this.m_driveSubsystem);
         register(this.m_intakeWheelSubsystem);
@@ -215,29 +227,37 @@ public class RobotContainer extends CommandOpMode
         this.m_dpadLeft = (new GamepadButton(this.m_driver2, GamepadKeys.Button.DPAD_LEFT))
                 .whenPressed(this.m_armFudgeFactorDownCommand);
 
-        this.m_armPositionCloseSampleCommand = new ArmPositionCloseSampleCommand(m_liftArmSubsystem, m_slideArmSubsystem);
+        this.m_armPositionCloseSampleCommand = new ArmPositionCloseSampleCommand(m_liftArmSubsystem, m_slideArmSubsystem, this.m_intakePivotSubsystem);
         this.m_x = (new GamepadButton(this.m_driver2, GamepadKeys.Button.X))
                 .whenPressed(this.m_armPositionCloseSampleCommand);
 
-        this.m_armPositionFarSampleCommand = new ArmPositionFarSampleCommand(m_liftArmSubsystem, m_slideArmSubsystem);
+        this.m_armPositionFarSampleCommand = new ArmPositionFarSampleCommand(m_liftArmSubsystem, m_slideArmSubsystem, m_intakePivotSubsystem);
         this.m_b = (new GamepadButton(this.m_driver2, GamepadKeys.Button.B))
                 .whenPressed(this.m_armPositionFarSampleCommand);
 
-        this.m_armPositionHighBasketCommand = new ArmPositionHighBasketCommand(m_liftArmSubsystem, m_slideArmSubsystem);
+        this.m_armPositionHighBasketCommand = new ArmPositionHighBasketCommand(m_liftArmSubsystem, m_slideArmSubsystem, m_intakePivotSubsystem);
         this.m_y = (new GamepadButton(this.m_driver2, GamepadKeys.Button.Y))
                 .whenPressed(this.m_armPositionHighBasketCommand);
 
-        this.m_armPositionHighChamberCommand = new ArmPositionHighChamberCommand(m_liftArmSubsystem, m_slideArmSubsystem);
+        this.m_armPositionHighChamberCommand = new ArmPositionHighChamberCommand(m_liftArmSubsystem, m_slideArmSubsystem, this.m_intakePivotSubsystem);
         this.m_dpadTop = (new GamepadButton(this.m_driver2, GamepadKeys.Button.DPAD_UP))
                 .whenPressed(this.m_armPositionHighChamberCommand);
 
-        this.m_armPositionHomeCommand = new ArmPositionHomeCommand(m_liftArmSubsystem, m_slideArmSubsystem);
+        this.m_armPositionHomeCommand = new ArmPositionHomeCommand(m_liftArmSubsystem, m_slideArmSubsystem, this.m_intakePivotSubsystem);
         this.m_leftBumper = (new GamepadButton(this.m_driver2, GamepadKeys.Button.LEFT_BUMPER))
                 .whenPressed(this.m_armPositionHomeCommand);
 
-        this.m_armPositionLowBasketCommand = new ArmPositionLowBasketCommand(m_liftArmSubsystem, m_slideArmSubsystem);
+        this.m_armPositionLowBasketCommand = new ArmPositionLowBasketCommand(m_liftArmSubsystem, m_slideArmSubsystem, m_intakePivotSubsystem);
         this.m_a = (new GamepadButton(this.m_driver2, GamepadKeys.Button.A))
                 .whenPressed(this.m_armPositionLowBasketCommand);
+
+        this.m_climbArmUpCommand = new ClimbArmUpCommand(m_climbArmSubsystem);
+        this.m_climbUpButton = (new GamepadButton(this.m_driver1, GamepadKeys.Button.Y))
+                .whileHeld(this.m_climbArmUpCommand);
+
+        this.m_climbArmDownCommand = new ClimbArmDownCommand(m_climbArmSubsystem);
+        this.m_climbDownButton = (new GamepadButton(this.m_driver1, GamepadKeys.Button.A))
+                .whileHeld(this.m_climbArmDownCommand);
 
         this.m_armPositionLowChamberCommand = new ArmPositionLowChamberCommand(m_liftArmSubsystem, m_slideArmSubsystem);
         this.m_dpadBottom = (new GamepadButton(this.m_driver2, GamepadKeys.Button.DPAD_DOWN))
@@ -247,7 +267,7 @@ public class RobotContainer extends CommandOpMode
         this.m_rightBumper = (new GamepadButton(this.m_driver2, GamepadKeys.Button.RIGHT_BUMPER))
                 .whenPressed(this.m_intakePivotCommand);
 
-        this.m_ascentArmCommand = new AscentArmCommand(this.m_ascentArmSubsystem);
+        this.m_ascentArmCommand = new StingrayArmCommand(this.m_ascentArmSubsystem);
         this.m_leftBumper = (new GamepadButton(this.m_driver1, GamepadKeys.Button.LEFT_BUMPER))
                 .whenPressed(this.m_ascentArmCommand);
 
@@ -255,9 +275,9 @@ public class RobotContainer extends CommandOpMode
         this.m_gyroResetButton = (new GamepadButton(this.m_driver1, GamepadKeys.Button.START))
                 .whenPressed(this.m_resetGyroCommand);
 
-        this.m_pinPointOdometrySubsystem = new PinPointOdometrySubsystem(m_goBilda);
-        this.m_odoResetButton = (new GamepadButton(this.m_driver1, GamepadKeys.Button.BACK))
-                .whenPressed(this.m_pinPointOdometryCommand);
+//        this.m_pinPointOdometrySubsystem = new PinPointOdometrySubsystem(m_goBilda);
+//        this.m_odoResetButton = (new GamepadButton(this.m_driver1, GamepadKeys.Button.BACK))
+//                .whenPressed(this.m_pinPointOdometryCommand);
 
 
 

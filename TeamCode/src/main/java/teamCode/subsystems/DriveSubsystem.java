@@ -46,7 +46,7 @@ public class DriveSubsystem extends SubsystemBase
                 (
                         leftX * leftX * leftX * -1,
                         leftY * leftY * leftY * -1,
-                        getTurnPower(rightX, rightY),
+                        getJoystickAngle(rightX, rightY),
                         this.m_imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES)
                 );
 //        System.out.println("Error: " + error);
@@ -58,32 +58,24 @@ public class DriveSubsystem extends SubsystemBase
 //        System.out.println("Turn angle: " + Math.atan2(rightX, rightY * -1) * -1 * (180 / Math.PI));
     }
 
-    public void driveRobot(int fL, int fR, int bL, int bR)
+//    public void autoHeadingDrive ()
+//    {
+//        m_drive.driveFieldCentric
+//                (
+//                        getTurnPower(90);
+//                );
+//
+//    }
+
+    public double getJoystickAngle (double rightX, double rightY)
     {
-        m_fLPos += fL;
-        m_fRPos += fR;
-        m_bLPos += bL;
-        m_bRPos += bR;
-
-        m_fLMotor.setTargetPosition(m_fLPos);
-        m_fRMotor.setTargetPosition(m_fRPos);
-        m_bLMotor.setTargetPosition(m_bLPos);
-        m_bRMotor.setTargetPosition(m_bRPos);
-
-        this.m_fLMotor.setPower(0.5);
-        this.m_fRMotor.setPower(0.5);
-        this.m_bLMotor.setPower(0.5);
-        this.m_bRMotor.setPower(0.5);
-
-//        this.m_fLMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-//        this.m_fRMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-//        this.m_bLMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-//        this.m_bRMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        return getTurnPower(rightX > 0.5 || rightX < -0.5 || rightY > 0.5 || rightY < -0.5, Math.atan2(rightX, rightY * -1) * -1 * (180 / Math.PI));
     }
 
-    public double getTurnPower(double rightX, double rightY)
+
+    public double getTurnPower(boolean deadband, double angle)
     {
-        turnTo(rightX, rightY);
+        turnTo(deadband, angle);
         System.out.println("Running!");
 
         if (Math.abs(error) > 6)
@@ -100,13 +92,13 @@ public class DriveSubsystem extends SubsystemBase
         }
     }
 
-    public void turnTo(double rightX, double rightY)
+    public void turnTo(boolean deadband, double angle)
     {
         Orientation orientation = m_imu.getRobotOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
         double desiredAngle;
-        if (rightX > 0.5 || rightX < -0.5 || rightY > 0.5 || rightY < -0.5)
+        if (deadband)
         {
-            desiredAngle = Math.atan2(rightX, rightY * -1) * -1 * (180 / Math.PI);
+            desiredAngle = angle;
         }
         else
         {
