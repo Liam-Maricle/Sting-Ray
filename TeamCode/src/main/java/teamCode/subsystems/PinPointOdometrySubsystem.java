@@ -13,6 +13,7 @@ public class PinPointOdometrySubsystem extends SubsystemBase
     GoBildaPinpointDriver odo;
     private double oldTime = 0;
 
+
     private Pose2D testPose = new Pose2D(DistanceUnit.MM, 100, 100, AngleUnit.DEGREES, 0.0);
 
     private final GoBildaPinpointDriver m_odo;
@@ -20,27 +21,23 @@ public class PinPointOdometrySubsystem extends SubsystemBase
     public PinPointOdometrySubsystem(GoBildaPinpointDriver odo)
     {
         this.m_odo = odo;
-        odo.setOffsets(68,-178);
-        odo.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
-        odo.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.FORWARD);
+        this.m_odo.setOffsets(68,-178);
+        this.m_odo.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
+        this.m_odo.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.REVERSED, GoBildaPinpointDriver.EncoderDirection.FORWARD);
+        this.m_odo.setPosition(new Pose2D(DistanceUnit.MM, 0,0, AngleUnit.DEGREES, 0.0));
     }
+
     public void resetOdo()
     {
         this.m_odo.resetPosAndIMU();
     }
 
-    public double[] getDeltaHeading()
+    public double[] getDeltaPosition(double target)
     {
-        double deltaX = testPose.getX(DistanceUnit.MM) - this.m_odo.getPosX();
-        double deltaY = testPose.getY(DistanceUnit.MM) - this.m_odo.getPosY();
-        double deltaHeading = testPose.getHeading(AngleUnit.DEGREES) - this.m_odo.getHeading();
-
-//        double returnX;
-//        double returnY;
-//        double returnHeading;
-//
-//        if (returnX > 25)
-
-        return new double[]{deltaX, deltaY, deltaHeading};
+        return new double[]
+                {
+                        (target - m_odo.getPosX()) / target,
+                        (target - m_odo.getPosY()) / target
+                };
     }
 }

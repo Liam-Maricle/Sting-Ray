@@ -12,6 +12,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
 import java.util.function.DoubleSupplier;
 
+import teamCode.GoBildaPinpointDriver;
+
 public class DriveSubsystem extends SubsystemBase
 {
     public MecanumDrive m_drive;
@@ -31,6 +33,8 @@ public class DriveSubsystem extends SubsystemBase
 
     IMU m_imu;
 
+    private PinPointOdometrySubsystem m_pinPointOdometrySubsystem;
+
     public DriveSubsystem(MecanumDrive drive, IMU imu)
     {
         this.m_drive = drive;
@@ -38,7 +42,18 @@ public class DriveSubsystem extends SubsystemBase
         this.m_currentAngle = 0.0;
         this.m_imu = imu;
 
+
     }
+
+//    public DriveSubsystem(MecanumDrive drive, IMU imu, GoBildaPinpointDriver pinPoint)
+//    {
+//        this.m_drive = drive;
+//        this.m_lastRecordedAngle = new Orientation();
+//        this.m_currentAngle = 0.0;
+//        this.m_imu = imu;
+//        this.m_pinPointOdometrySubsystem = new PinPointOdometrySubsystem(pinPoint);
+//
+//    }
 
     public void headingDrive(double leftX, double leftY, double rightX, double rightY)
     {
@@ -58,14 +73,16 @@ public class DriveSubsystem extends SubsystemBase
 //        System.out.println("Turn angle: " + Math.atan2(rightX, rightY * -1) * -1 * (180 / Math.PI));
     }
 
-//    public void autoHeadingDrive ()
-//    {
-//        m_drive.driveFieldCentric
-//                (
-//                        getTurnPower(90);
-//                );
-//
-//    }
+    public void autoHeadingDrive (DoubleSupplier targetX, DoubleSupplier targetY, DoubleSupplier targetAngle)
+    {
+        m_drive.driveFieldCentric
+                (
+                        this.m_pinPointOdometrySubsystem.getDeltaPosition(targetX.getAsDouble())[0],
+                        this.m_pinPointOdometrySubsystem.getDeltaPosition(targetY.getAsDouble())[1],
+                        getTurnPower(true,0),
+                        this.m_imu.getRobotYawPitchRollAngles().getYaw()
+                );
+    }
 
     public double getJoystickAngle (double rightX, double rightY)
     {
