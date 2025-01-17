@@ -20,7 +20,7 @@ import teamCode.commands.ArmPositionHomeCommand;
 import teamCode.commands.ArmPositionCloseSampleCommand;
 import teamCode.commands.ArmPositionHighBasketCommand;
 import teamCode.commands.IntakePivotCommand;
-import teamCode.commands.AscentArmCommand;
+import teamCode.commands.StingrayArmCommand;
 
 
 @com.qualcomm.robotcore.eventloop.opmode.Autonomous(name = "AutoSample")
@@ -43,7 +43,7 @@ public class AutoSample extends LinearOpMode
     private ArmPositionHomeCommand m_armPositionHomeCommand;
     private ArmPositionCloseSampleCommand m_armPositionCloseSampleCommand;
     private IntakePivotCommand m_intakePivotCommand;
-    private AscentArmCommand m_ascentArmCommand;
+    private StingrayArmCommand m_ascentArmCommand;
 
 
     @Override
@@ -84,11 +84,11 @@ public class AutoSample extends LinearOpMode
         this.m_slideArmSubsystem = new SlideArmSubsystem(this.m_slideArmMotor);
         this.m_intakeWheelSubsystem = new IntakeWheelSubsystem(this.m_intakeWheelServo);
 
-        this.m_armPositionHomeCommand = new ArmPositionHomeCommand(this.m_liftArmSubsystem, this.m_slideArmSubsystem);
-        this.m_armPositionCloseSampleCommand = new ArmPositionCloseSampleCommand(this.m_liftArmSubsystem, this.m_slideArmSubsystem);
-        this.m_armPositionHighBasketCommand = new ArmPositionHighBasketCommand(this.m_liftArmSubsystem, this.m_slideArmSubsystem);
+        this.m_armPositionHomeCommand = new ArmPositionHomeCommand(this.m_liftArmSubsystem, this.m_slideArmSubsystem, this.m_intakePivotSubsystem);
+        this.m_armPositionCloseSampleCommand = new ArmPositionCloseSampleCommand(this.m_liftArmSubsystem, this.m_slideArmSubsystem, this.m_intakePivotSubsystem);
+        this.m_armPositionHighBasketCommand = new ArmPositionHighBasketCommand(this.m_liftArmSubsystem, this.m_slideArmSubsystem, this.m_intakePivotSubsystem);
         this.m_intakePivotCommand = new IntakePivotCommand(this.m_intakePivotSubsystem);
-        this.m_ascentArmCommand = new AscentArmCommand(this.m_ascentArmSubsystem);
+        this.m_ascentArmCommand = new StingrayArmCommand(this.m_ascentArmSubsystem);
 
 
         //Initialize

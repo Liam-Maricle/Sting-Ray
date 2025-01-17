@@ -5,6 +5,7 @@ import com.arcrobotics.ftclib.command.WaitCommand;
 
 import teamCode.Constants;
 import teamCode.Logic;
+import teamCode.subsystems.IntakePivotSubsystem;
 import teamCode.subsystems.LiftArmSubsystem;
 import teamCode.subsystems.SlideArmSubsystem;
 
@@ -12,14 +13,16 @@ public class ArmPositionHighBasketCommand extends CommandBase
 {
     private LiftArmSubsystem m_liftArmSubsystem;
     private SlideArmSubsystem m_slideArmSubsystem;
+    private IntakePivotSubsystem m_intakePivotSubsystem;
 
     public ArmPositionHighBasketCommand(LiftArmSubsystem liftArmSubsystem,
-                                        SlideArmSubsystem slideArmSubsystem)
+                                        SlideArmSubsystem slideArmSubsystem, IntakePivotSubsystem intakePivotSubsystem)
     {
         this.m_liftArmSubsystem = liftArmSubsystem;
         this.m_slideArmSubsystem = slideArmSubsystem;
+        this.m_intakePivotSubsystem = intakePivotSubsystem;
 
-        addRequirements(m_liftArmSubsystem, m_slideArmSubsystem);
+        addRequirements(m_liftArmSubsystem, m_slideArmSubsystem, m_intakePivotSubsystem);
 
     }
 
@@ -35,6 +38,7 @@ public class ArmPositionHighBasketCommand extends CommandBase
         if (m_liftArmSubsystem.atTarget(Constants.LiftArmConstants.kLiftArmHighBasket))
         {
             this.m_slideArmSubsystem.slideArm(Constants.SlideArmConstants.kSlideArmHighBasket);
+            this.m_intakePivotSubsystem.pivotIntake(Constants.PivotIntakeConstants.kIntakePivotScore);
         }
     }
 
